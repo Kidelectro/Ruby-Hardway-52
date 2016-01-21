@@ -35,16 +35,21 @@ class TestMap < Test::Unit::TestCase
   end
 
   def test_gothon_game_map()
-    assert_equal(Map::CENTRAL_CORRIDOR_SHOOT_DEATH, Map::START.go('shoot!'))
-    assert_equal(Map::CENTRAL_CORRIDOR_DODGE_DEATH, Map::START.go('dodge!'))
+    assert_equal(Map::CENTRAL_CORRIDOR_SHOOT_DEATH, Map::START.go('shoot'))
+    assert_equal(Map::CENTRAL_CORRIDOR_DODGE_DEATH, Map::START.go('dodge'))
     assert_equal(Map::THE_BRIDGE_DEATH, Map::THE_BRIDGE.go('throw the bomb'))
-    assert_equal(Map::LASER_WEAPON_ARMORY_DEATH, Map::LASER_WEAPON_ARMORY.go('*'))
+
+    room = Map::START.go('tell joke')
+    assert_equal(Map::LASER_WEAPON_ARMORY, room)
 
     room = Map::START.go('tell a joke')
     assert_equal(Map::LASER_WEAPON_ARMORY, room)
 
     room = Map::LASER_WEAPON_ARMORY.go('0132')
     assert_equal(Map::THE_BRIDGE, room)
+
+    room = Map::THE_BRIDGE.go('slowly place bomb')
+    assert_equal(Map::ESCAPE_POD, room)
 
     room = Map::THE_BRIDGE.go('slowly place the bomb')
     assert_equal(Map::ESCAPE_POD, room)
@@ -54,6 +59,25 @@ class TestMap < Test::Unit::TestCase
 
     room = Map::ESCAPE_POD.go('*')
     assert_equal(Map::THE_END_LOSER, room)
+  end
+
+  def test_laser_weapon_armory
+    room = Map::WEAPON_ARMORY_GUESS.go('0132')
+    assert_equal(Map::THE_BRIDGE, room)
+
+    room = Map::LASER_WEAPON_ARMORY.go('*')
+    assert_equal(Map::WEAPON_ARMORY_GUESS, room)
+  end
+
+  def test_you_die_if_you_have_five_incorrect_guesses
+    $guesses = 5
+    assert_equal(Map::LASER_WEAPON_ARMORY_DEATH, Map::WEAPON_ARMORY_GUESS.go('*'))
+  end
+
+  def test_guesses_counter_ticks_up_if_player_provides_wrong_answer
+    $guesses = 0
+    room = Map::LASER_WEAPON_ARMORY.go('*')
+    assert_equal(1, $guesses)
   end
 
   def test_session_loading()
